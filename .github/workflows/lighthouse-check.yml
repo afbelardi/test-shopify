@@ -1,0 +1,81 @@
+name: Lighthouse Performance Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "**/*.{js,css,liquid}" # Only run on theme file changes
+
+jobs:
+  lighthouse-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Setup Node.js for Shopify CLI
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      # Install Shopify CLI
+      - name: Install Shopify CLI
+        run: npm install -g @shopify/cli @shopify/theme
+
+      # Deploy theme to development environment
+      - name: Deploy theme to development
+        env:
+          SHOPIFY_FLAG_STORE: ${{ secrets.SHOPIFY_STORE_URL }}
+          SHOPIFY_CLI_THEME_TOKEN: ${{ secrets.SHOPIFY_CLI_THEME_TOKEN }}
+        run: |
+          shopify theme push --development
+
+      # Wait for deployment to stabilize
+      - name: Wait for deployment
+        run: sleep 30
+
+      # Run Lighthouse CI
+      - name: Run Lighthouse CI
+        id: lighthouse
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            https://${{ secrets.SHOPIFY_STORE_URL }}
+          configPath: ".github/lighthouse-config.json"
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      # Process Lighthouse results and send to Slack
+      - name: Process Lighthouse Results
+        if: ${{ steps.lighthouse.outputs.manifest }}
+        id: process
+        run: |
+          SCORE=$(jq '.performance' ${{ steps.lighthouse.outputs.manifest }})
+          THRESHOLD=80
+
+          if (( $(echo "$SCORE < $THRESHOLD" | bc -l) )); then
+            echo "score=$SCORE" >> $GITHUB_OUTPUT
+            echo "below_threshold=true" >> $GITHUB_OUTPUT
+          fi
+
+      # Send Slack notification if performance is below threshold
+      - name: Send Slack notification
+        if: steps.process.outputs.below_threshold == 'true'
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "🚨 Performance Alert!",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Performance Alert for PR #${{ github.event.pull_request.number }}*\n\nLighthouse performance score (${{ steps.process.outputs.score }}) is below threshold (80)\n\n<${{ github.event.pull_request.html_url }}|View Pull Request>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

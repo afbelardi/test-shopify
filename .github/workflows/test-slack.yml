@@ -1,0 +1,27 @@
+name: Test Slack Notification
+
+on:
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  test-slack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send test Slack message
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "🧪 Test Notification",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Test Performance Alert*\n\nThis is a test notification to verify the Slack integration is working correctly.\n\nSimulated performance score: 75"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
