@@ -5,7 +5,16 @@ on:
     branches:
       - main
     paths:
-      - "**/*.{js,css,liquid}" # Only run on theme file changes
+      - "assets/**"
+      - "layout/**"
+      - "sections/**"
+      - "snippets/**"
+      - "templates/**"
+      - "config/**"
+      - "**.js"
+      - "**.css"
+      - "**.liquid"
+      - "**.json"
 
 jobs:
   lighthouse-check:
