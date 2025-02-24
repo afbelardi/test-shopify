@@ -38,7 +38,7 @@ jobs:
           SHOPIFY_FLAG_STORE: ${{ secrets.SHOPIFY_STORE_URL }}
           SHOPIFY_CLI_THEME_TOKEN: ${{ secrets.SHOPIFY_CLI_THEME_TOKEN }}
         run: |
-          shopify theme push --development
+          shopify theme push --development --timeout 60s
 
       # Wait for deployment to stabilize
       - name: Wait for deployment
