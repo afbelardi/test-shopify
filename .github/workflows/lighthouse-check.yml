@@ -52,8 +52,7 @@ jobs:
           urls: |
             https://${{ secrets.SHOPIFY_STORE_URL }}
           configPath: ".github/lighthouse-config.json"
-          uploadArtifacts: true
-          artifactName: lighthouse_results
+          uploadArtifacts: false
           temporaryPublicStorage: true
 
       # Process Lighthouse results and send to Slack
