@@ -45,17 +45,18 @@ jobs:
         run: sleep 30
 
       # Run Lighthouse CI
-    - name: Run Lighthouse CI
-  id: lighthouse
-  uses: treosh/lighthouse-ci-action@v10
-  with:
-    urls: |
-      https://${{ secrets.SHOPIFY_STORE_URL }}
-    configPath: ".github/lighthouse-config.json"
-    uploadArtifacts: false
-    temporaryPublicStorage: true
-  env:
-    LHCI_BUILD_CONTEXT__GITHUB_ARTIFACT_NAME: ""
+      - name: Run Lighthouse
+        id: lighthouse
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            https://${{ secrets.SHOPIFY_STORE_URL }}
+          configPath: ".github/lighthouse-config.json"
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          artifactName: lighthouse-report
+      env:
+        LHCI_BUILD_CONTEXT__GITHUB_ARTIFACT_NAME: ""
 
       # Process Lighthouse results and send to Slack
       - name: Process Lighthouse Results
