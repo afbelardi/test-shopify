@@ -57,6 +57,14 @@ jobs:
         env:
           LHCI_BUILD_CONTEXT__GITHUB_ARTIFACT_NAME: ""
 
+      # Store Lighthouse results as artifacts
+      - name: Upload Lighthouse results
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-results
+          path: ${{ steps.lighthouse.outputs.resultsPath }}
+          retention-days: 7
+
       # Process Lighthouse results and send to Slack
       - name: Process Lighthouse Results
         if: ${{ steps.lighthouse.outputs.manifest }}
