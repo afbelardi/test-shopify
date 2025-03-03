@@ -52,10 +52,6 @@ jobs:
           urls: |
             https://${{ secrets.SHOPIFY_STORE_URL }}
           configPath: ".github/lighthouse-config.json"
-          uploadArtifacts: false
-          temporaryPublicStorage: true
-        env:
-          LHCI_BUILD_CONTEXT__GITHUB_ARTIFACT_NAME: ""
 
       # Store Lighthouse results as artifacts
       - name: Upload Lighthouse results
