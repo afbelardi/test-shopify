@@ -47,7 +47,7 @@ jobs:
       # Run Lighthouse CI
       - name: Run Lighthouse
         id: lighthouse
-        uses: treosh/lighthouse-ci-action@v9
+        uses: treosh/lighthouse-ci-action@v10
         with:
           urls: |
             https://${{ secrets.SHOPIFY_STORE_URL }}
