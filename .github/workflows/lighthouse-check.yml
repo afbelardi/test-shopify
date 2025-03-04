@@ -53,13 +53,13 @@ jobs:
             https://${{ secrets.SHOPIFY_STORE_URL }}
           configPath: ".github/lighthouse-config.json"
 
-      # # Store Lighthouse results as artifacts
-      # - name: Upload Lighthouse results
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: lighthouse-results
-      #     path: ${{ steps.lighthouse.outputs.resultsPath }}
-      #     retention-days: 7
+      # Store Lighthouse results as artifacts
+      - name: Upload Lighthouse results
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-results
+          path: ${{ steps.lighthouse.outputs.resultsPath }}
+          retention-days: 7
 
       # Process Lighthouse results and send to Slack
       - name: Process Lighthouse Results
