@@ -47,19 +47,11 @@ jobs:
       # Run Lighthouse CI
       - name: Run Lighthouse
         id: lighthouse
-        uses: treosh/lighthouse-ci-action@v10
+        uses: treosh/lighthouse-ci-action@v9
         with:
           urls: |
             https://${{ secrets.SHOPIFY_STORE_URL }}
           configPath: ".github/lighthouse-config.json"
-        continue-on-error: true # Allow the workflow to continue even if this step fails
-        run: |
-          echo "Running Lighthouse CI on URL: https://${{ secrets.SHOPIFY_STORE_URL }}"
-          if [ -z "${{ secrets.SHOPIFY_STORE_URL }}" ]; then
-            echo "Error: SHOPIFY_STORE_URL is not set."
-            exit 1
-          fi
-          # Additional debugging can be added here if needed
 
       # # Store Lighthouse results as artifacts
       # - name: Upload Lighthouse results
