@@ -52,6 +52,16 @@ jobs:
           urls: |
             https://${{ secrets.SHOPIFY_STORE_URL }}
           configPath: ".github/lighthouse-config.json"
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          outputDirectory: .lighthouseci
+
+      # Debug Lighthouse output
+      - name: Debug Lighthouse output
+        run: |
+          echo "Manifest output: ${{ steps.lighthouse.outputs.manifest }}"
+          echo "Results directory content:"
+          ls -la .lighthouseci || echo "Directory not found"
 
       # Store Lighthouse results as artifacts
       - name: Upload Lighthouse results
