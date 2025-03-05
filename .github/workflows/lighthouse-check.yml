@@ -67,7 +67,7 @@ jobs:
       - name: Upload Lighthouse results
         uses: actions/upload-artifact@v4
         with:
-          name: lighthouse-results
+          name: results
           path: ${{ steps.lighthouse.outputs.resultsPath }}
           retention-days: 7
 
