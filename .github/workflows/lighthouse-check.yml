@@ -62,7 +62,7 @@ jobs:
             echo "Lighthouse reports directory found."
             ls -la ./lighthouse-reports
           else
-            echo "❌ No Lighthouse reports directory found!"
+            echo "❌ No Lighthouse reports directory found!!"
             exit 1
           fi
 
