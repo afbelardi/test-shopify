@@ -44,35 +44,34 @@ jobs:
       - name: Wait for deployment
         run: sleep 30
 
-      # Run Lighthouse CI
-      - name: Lighthouse CI
-        id: lighthouse
-        uses: treosh/lighthouse-ci-action@v10
-        with:
-          urls: |
-            https://${{ secrets.SHOPIFY_STORE_URL }}
-          uploadArtifacts: false
-          temporaryPublicStorage: true
-          outputDirectory: ./lighthouse-reports
+     # Run Lighthouse CI
+  - name: Lighthouse CI
+    id: lighthouse
+    uses: treosh/lighthouse-ci-action@v10
+    with:
+      urls: |
+        https://${{ secrets.SHOPIFY_STORE_URL }}
+      uploadArtifacts: true
+      temporaryPublicStorage: true
 
-      # Check if Lighthouse reports exist
-      - name: Check if Lighthouse reports exist
-        run: |
-          if [ -d "./lighthouse-reports" ]; then
-            echo "Lighthouse reports directory found."
-            ls -la ./lighthouse-reports
-          else
-            echo "❌ No Lighthouse reports directory found!!"
-            exit 1
-          fi
+  # Check if Lighthouse reports exist
+  - name: Check if Lighthouse reports exist
+    run: |
+      if [ -d ".lighthouseci" ]; then
+        echo "✅ Lighthouse reports directory found."
+        ls -la .lighthouseci
+      else
+        echo "❌ No Lighthouse reports directory found!!"
+        exit 1
+      fi
 
-      # Store Lighthouse results as artifacts
-      - name: Upload Lighthouse results
-        uses: actions/upload-artifact@v4
-        with:
-          name: lighthouse_results
-          path: ./lighthouse-reports
-          retention-days: 7
+  # Store Lighthouse results as artifacts
+  - name: Upload Lighthouse results
+    uses: actions/upload-artifact@v4
+    with:
+      name: lighthouse_results
+      path: .lighthouseci/  # ✅ Use the correct default output folder
+      retention-days: 7
 
       # Process Lighthouse results and send to Slack
       - name: Process Lighthouse Results
