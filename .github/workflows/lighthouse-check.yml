@@ -46,7 +46,8 @@ jobs:
 
       # Run Lighthouse CI
       - name: Lighthouse CI
-        uses: GoogleChrome/lighthouse-ci-action@v1
+        id: lighthouse
+        uses: treosh/lighthouse-ci-action@v10
         with:
           urls: |
             https://${{ secrets.SHOPIFY_STORE_URL }}
