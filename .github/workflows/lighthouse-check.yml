@@ -53,6 +53,18 @@ jobs:
             https://${{ secrets.SHOPIFY_STORE_URL }}
           uploadArtifacts: false
           temporaryPublicStorage: true
+          outputDirectory: ./lighthouse-reports
+
+      # Check if Lighthouse reports exist
+      - name: Check if Lighthouse reports exist
+        run: |
+          if [ -d "./lighthouse-reports" ]; then
+            echo "Lighthouse reports directory found."
+            ls -la ./lighthouse-reports
+          else
+            echo "❌ No Lighthouse reports directory found!"
+            exit 1
+          fi
 
       # Store Lighthouse results as artifacts
       - name: Upload Lighthouse results
