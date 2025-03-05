@@ -51,22 +51,18 @@ jobs:
         with:
           urls: |
             https://${{ secrets.SHOPIFY_STORE_URL }}
-          uploadArtifacts: true
+          uploadArtifacts: false
           temporaryPublicStorage: true
 
-      # Debug Lighthouse output
-      - name: Debug Lighthouse output
-        run: |
-          echo "Manifest output: ${{ steps.lighthouse.outputs.manifest }}"
-          echo "Results directory content:"
-          ls -la .lighthouseci || echo "Directory not found"
+      - name: Debug results path
+        run: echo "Results path: ${{ steps.lighthouse.outputs.resultsPath }}"
 
       # Store Lighthouse results as artifacts
       - name: Upload Lighthouse results
         uses: actions/upload-artifact@v4
         with:
-          name: results
-          path: ${{ steps.lighthouse.outputs.resultsPath }}
+          name: lighthouse_results
+          path: ./lighthouse-reports
           retention-days: 7
 
       # Process Lighthouse results and send to Slack
