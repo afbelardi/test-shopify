@@ -54,9 +54,6 @@ jobs:
           uploadArtifacts: false
           temporaryPublicStorage: true
 
-      - name: Debug results path
-        run: echo "Results path: ${{ steps.lighthouse.outputs.resultsPath }}"
-
       # Store Lighthouse results as artifacts
       - name: Upload Lighthouse results
         uses: actions/upload-artifact@v4
