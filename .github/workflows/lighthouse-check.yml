@@ -45,16 +45,13 @@ jobs:
         run: sleep 30
 
       # Run Lighthouse CI
-      - name: Run Lighthouse
-        id: lighthouse
-        uses: treosh/lighthouse-ci-action@v10
+      - name: Lighthouse CI
+        uses: GoogleChrome/lighthouse-ci-action@v1
         with:
           urls: |
             https://${{ secrets.SHOPIFY_STORE_URL }}
-          configPath: ".github/lighthouse-config.json"
           uploadArtifacts: true
           temporaryPublicStorage: true
-          outputDirectory: .lighthouseci
 
       # Debug Lighthouse output
       - name: Debug Lighthouse output
