@@ -40,10 +40,18 @@ jobs:
       - name: Get Development Theme ID
         id: get_theme_id
         env:
-          SHOPIFY_FLAG_STORE: ${{ secrets.SHOPIFY_STORE_URL }}
           SHOPIFY_CLI_AUTH_TOKEN: ${{ secrets.SHOPIFY_CLI_THEME_TOKEN }}
+          SHOPIFY_FLAG_STORE: ${{ secrets.SHOPIFY_STORE_URL }}
+          SHOPIFY_CLI_TUNNEL_URL: https://fake.localhost
+          SHOPIFY_CLI_ENV: ci
         run: |
-          THEME_ID=$(shopify theme list --store $SHOPIFY_FLAG_STORE --json | jq -r '.[] | select(.role == "development") | .id')
+          echo "🔐 Listing themes for store $SHOPIFY_FLAG_STORE"
+          shopify theme list --store=$SHOPIFY_FLAG_STORE --json > themes.json
+
+          cat themes.json
+
+          THEME_ID=$(jq -r '.[] | select(.role == "development") | .id' themes.json)
+          echo "🆔 Found development theme ID: $THEME_ID"
           echo "theme_id=$THEME_ID" >> $GITHUB_OUTPUT
 
       - name: Wait for deployment
