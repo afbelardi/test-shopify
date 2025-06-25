@@ -41,6 +41,7 @@ jobs:
         id: get_theme_id
         env:
           SHOPIFY_FLAG_STORE: ${{ secrets.SHOPIFY_STORE_URL }}
+          SHOPIFY_CLI_AUTH_TOKEN: ${{ secrets.SHOPIFY_CLI_THEME_TOKEN }}
         run: |
           THEME_ID=$(shopify theme list --store $SHOPIFY_FLAG_STORE --json | jq -r '.[] | select(.role == "development") | .id')
           echo "theme_id=$THEME_ID" >> $GITHUB_OUTPUT
