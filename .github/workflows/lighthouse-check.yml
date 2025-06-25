@@ -22,79 +22,84 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Setup Node.js for Shopify CLI
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "18"
 
-      # Install Shopify CLI
       - name: Install Shopify CLI
         run: npm install -g @shopify/cli @shopify/theme
 
-      # Deploy theme to development environment
       - name: Deploy theme to development
         env:
           SHOPIFY_FLAG_STORE: ${{ secrets.SHOPIFY_STORE_URL }}
           SHOPIFY_CLI_THEME_TOKEN: ${{ secrets.SHOPIFY_CLI_THEME_TOKEN }}
         run: |
-          shopify theme push --development
+          shopify theme push --development --unpublished --store $SHOPIFY_FLAG_STORE
 
-      # Wait for deployment to stabilize
+      - name: Get Development Theme ID
+        id: get_theme_id
+        env:
+          SHOPIFY_FLAG_STORE: ${{ secrets.SHOPIFY_STORE_URL }}
+        run: |
+          THEME_ID=$(shopify theme list --store $SHOPIFY_FLAG_STORE --json | jq -r '.[] | select(.role == "development") | .id')
+          echo "theme_id=$THEME_ID" >> $GITHUB_OUTPUT
+
       - name: Wait for deployment
         run: sleep 30
 
-      - name: Lighthouse CI
-        id: lighthouse
+      - name: Run Lighthouse on live site (main branch)
         uses: treosh/lighthouse-ci-action@v10
+        id: live
         with:
           urls: |
             https://${{ secrets.SHOPIFY_STORE_URL }}
           uploadArtifacts: true
           temporaryPublicStorage: true
 
-      - name: Check if Lighthouse reports exist
+      - name: Run Lighthouse on PR preview theme
+        uses: treosh/lighthouse-ci-action@v10
+        id: preview
+        with:
+          urls: |
+            https://${{ secrets.SHOPIFY_STORE_URL }}/?preview_theme_id=${{ steps.get_theme_id.outputs.theme_id }}
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Compare Lighthouse Scores
+        id: compare
         run: |
-          if [ -d ".lighthouseci" ]; then
-            echo "✅ Lighthouse reports directory found."
-            ls -la .lighthouseci
-          else
-            echo "❌ No Lighthouse reports directory found."
+          live_score=$(cat "${{ steps.live.outputs.manifest }}" | jq '.[] | select(.isRepresentativeRun == true) | .summary.performance')
+          pr_score=$(cat "${{ steps.preview.outputs.manifest }}" | jq '.[] | select(.isRepresentativeRun == true) | .summary.performance')
+
+          echo "Live score: $live_score"
+          echo "PR score: $pr_score"
+
+          score_diff=$(echo "$live_score - $pr_score" | bc)
+          echo "Score difference: $score_diff"
+
+          echo "live_score=$live_score" >> $GITHUB_OUTPUT
+          echo "pr_score=$pr_score" >> $GITHUB_OUTPUT
+          echo "score_diff=$score_diff" >> $GITHUB_OUTPUT
+
+          if (( $(echo "$score_diff > 5" | bc -l) )); then
+            echo "⚠️ Performance dropped by more than 5 points!"
             exit 1
           fi
 
-      - name: Upload Lighthouse results
-        uses: actions/upload-artifact@v4
-        with:
-          name: lighthouse_results
-          path: .lighthouseci/
-          retention-days: 7
-
-      - name: Process Lighthouse Results
-        if: ${{ steps.lighthouse.outputs.manifest }}
-        id: process
-        run: |
-          SCORE=$(cat ${{ steps.lighthouse.outputs.manifest }} | jq '.[] | select(.isRepresentativeRun == true) | .summary.performance')
-          THRESHOLD=80
-
-          if (( $(echo "$SCORE < $THRESHOLD" | bc -l) )); then
-            echo "score=$SCORE" >> $GITHUB_OUTPUT
-            echo "below_threshold=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Send Slack notification
-        if: steps.process.outputs.below_threshold == 'true'
+      - name: Send Slack Notification (if performance dropped)
+        if: failure()
         uses: slackapi/slack-github-action@v1.24.0
         with:
           payload: |
             {
-              "text": "🚨 Performance Alert!",
+              "text": "🚨 Performance Drop Detected",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Performance Alert for PR #${{ github.event.pull_request.number }}*\n\nLighthouse performance score (${{ steps.process.outputs.score }}) is below threshold (80)\n\n<${{ github.event.pull_request.html_url }}|View Pull Request>"
+                    "text": "*Performance drop detected in PR #${{ github.event.pull_request.number }}*\n\nLive score: ${{ steps.compare.outputs.live_score }}\nPR score: ${{ steps.compare.outputs.pr_score }}\nDiff: ${{ steps.compare.outputs.score_diff }}\n\n<${{ github.event.pull_request.html_url }}|View Pull Request>"
                   }
                 }
               ]
