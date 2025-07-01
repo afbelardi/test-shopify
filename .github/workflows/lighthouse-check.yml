@@ -39,7 +39,7 @@ jobs:
           SHOPIFY_CLI_ENV: ci
         run: |
           echo "🔐 Using Admin API token for store-level auth"
-          OUTPUT=$(shopify theme push --unpublished --store $SHOPIFY_FLAG_STORE --no-interaction)
+          OUTPUT=$(shopify theme push --unpublished --store $SHOPIFY_FLAG_STORE)
           echo "$OUTPUT"
 
           THEME_ID=$(echo "$OUTPUT" | grep -oE 'preview_theme_id=[0-9]+' | cut -d= -f2)
