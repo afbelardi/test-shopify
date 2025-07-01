@@ -38,11 +38,12 @@ jobs:
           SHOPIFY_CLI_TUNNEL_URL: https://fake.localhost
           SHOPIFY_CLI_ENV: ci
         run: |
-          OUTPUT=$(shopify theme push --unpublished --store $SHOPIFY_FLAG_STORE)
+          echo "🔐 Using Admin API token for store-level auth"
+          OUTPUT=$(shopify theme push --unpublished --store $SHOPIFY_FLAG_STORE --no-interaction)
           echo "$OUTPUT"
 
           THEME_ID=$(echo "$OUTPUT" | grep -oE 'preview_theme_id=[0-9]+' | cut -d= -f2)
-          echo "🆔 Extracted preview theme ID: $THEME_ID"
+          echo "Extracted preview theme ID: $THEME_ID"
           echo "theme_id=$THEME_ID" >> $GITHUB_OUTPUT
 
       - name: Wait for deployment
